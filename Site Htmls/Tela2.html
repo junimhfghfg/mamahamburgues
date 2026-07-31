@@ -1,0 +1,204 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MamaFood — Painel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../../shared.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-btn" id="menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <div><span class="topbar-title">Painel</span><span class="topbar-sub"> MamaFood</span></div>
+      <div class="topbar-right">
+        <div class="topbar-time"><i class="fa-regular fa-clock"></i><span id="clock">--:--</span></div>
+      </div>
+    </div>
+    <div class="content" style="display:flex;align-items:center;justify-content:center;min-height:70vh">
+      <div style="text-align:center">
+        <i class="fa-solid fa-bowl-food" style="font-size:3.5rem;color:var(--red);margin-bottom:18px;display:block"></i>
+        <h2 style="color:var(--dark);margin-bottom:8px;font-size:1.4rem">Bem-vindo ao MamaFood!</h2>
+        <p style="color:var(--gray-3);font-size:.9rem">Use o menu lateral para navegar pelo painel.</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ===== NOTIFICAÇÕES DE BOAS-VINDAS ===== -->
+<div id="notif-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:900; align-items:center; justify-content:center; backdrop-filter:blur(3px)">
+  <div id="notif-card" style="
+    background:#1a1a1a;
+    border-radius:20px;
+    width:360px;
+    max-width:92vw;
+    padding:32px 28px 24px;
+    position:relative;
+    box-shadow:0 24px 60px rgba(0,0,0,.5);
+    animation: notifIn .4s cubic-bezier(.34,1.56,.64,1);
+    text-align:center;
+  ">
+    <!-- Fechar -->
+    <button onclick="fecharNotif()" style="position:absolute;top:14px;right:14px;background:#2a2a2a;border:none;color:#888;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:background .15s" onmouseover="this.style.background='#3a3a3a'" onmouseout="this.style.background='#2a2a2a'">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <!-- Ícone -->
+    <div id="notif-icon" style="width:72px;height:72px;border-radius:18px;background:#f97316;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:2rem;box-shadow:0 8px 24px rgba(249,115,22,.35)">
+      🍔
+    </div>
+
+    <!-- Badge -->
+    <div style="display:inline-flex;align-items:center;gap:6px;background:#1e1e1e;border:1.5px solid #f97316;border-radius:20px;padding:4px 14px;margin-bottom:16px">
+      <span style="width:7px;height:7px;border-radius:50%;background:#f97316;display:inline-block"></span>
+      <span id="notif-badge" style="font-size:.72rem;font-weight:800;color:#f97316;text-transform:uppercase;letter-spacing:.08em">Bem-vindo</span>
+    </div>
+
+    <!-- Texto -->
+    <p id="notif-text" style="font-size:1rem;font-weight:600;color:#fff;line-height:1.55;margin-bottom:22px">
+      Seja muito bem-vindo à Casa da Mama! 🎉
+    </p>
+
+    <!-- Botão principal -->
+    <button id="notif-btn" onclick="proximaNotif()" style="width:100%;padding:14px;background:#f97316;color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:800;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px" onmouseover="this.style.background='#ea6d0f'" onmouseout="this.style.background='#f97316'">
+      <span id="notif-btn-text">Ver o cardápio</span>
+      <i class="fa-solid fa-arrow-right"></i>
+    </button>
+
+    <!-- Rodapé -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+      <button onclick="naoMostrar()" style="background:none;border:none;color:#555;font-size:.78rem;cursor:pointer;display:flex;align-items:center;gap:5px" onmouseover="this.style.color='#888'" onmouseout="this.style.color='#555'">
+        <i class="fa-regular fa-bell-slash"></i> Não mostrar
+      </button>
+      <div id="notif-dots" style="display:flex;gap:5px"></div>
+      <button onclick="fecharNotif()" style="background:none;border:none;color:#555;font-size:.78rem;cursor:pointer" onmouseover="this.style.color='#888'" onmouseout="this.style.color='#555'">
+        Fechar
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes notifIn {
+  from { transform: scale(.85) translateY(20px); opacity: 0; }
+  to   { transform: scale(1)   translateY(0);    opacity: 1; }
+}
+</style>
+<script src="../../App Js/shared.js"></script>
+<script>
+  // ── Slides de boas-vindas ────────────────────────────────────────
+  var NOTIFS = [
+    {
+      icon: '👋',
+      badge: 'Bem-vindo',
+      text: 'Seja muito bem-vindo à <b>Casa da Mama</b>! Aqui você encontra os melhores hambúrgueres e salgados da cidade, feitos com muito carinho.',
+      btn: 'Conhecer o cardápio',
+      link: 'cardapio.html'
+    },
+    {
+      icon: '🍔',
+      badge: 'Hambúrgueres',
+      text: 'Nossos hambúrgueres são feitos com ingredientes frescos e pão artesanal. Escolha o seu favorito e receba em casa quentinho!',
+      btn: 'Ver hambúrgueres',
+      link: 'cardapio.html'
+    },
+    {
+      icon: '🥟',
+      badge: 'Salgados',
+      text: 'Coxinha, pastel, enroladinho e muito mais! Nossos salgados são fritos na hora, crocantes por fora e recheados por dentro.',
+      btn: 'Ver salgados',
+      link: 'cardapio.html'
+    },
+    {
+      icon: '🛵',
+      badge: 'Entrega Rápida',
+      text: 'Entregamos na sua porta com agilidade e cuidado. Acompanhe seu pedido em tempo real pelo painel <b>Meus Pedidos</b>.',
+      btn: 'Fazer meu pedido',
+      link: 'meus-pedidos.html'
+    },
+    {
+      icon: '❤️',
+      badge: 'Obrigado',
+      text: 'Obrigado por escolher a <b>Casa da Mama</b>! Seu pedido é especial pra gente. Bom apetite! 😋',
+      btn: 'Começar agora',
+      link: 'cardapio.html'
+    }
+  ];
+
+  var notifIdx = 0;
+
+  function mostrarNotif() {
+    // Não mostra se o usuário já dispensou
+    if (localStorage.getItem('mf_notif_dismissed')) return;
+    // Só mostra se acabou de cadastrar (flag)
+    if (!localStorage.getItem('mf_novo_cadastro')) return;
+    localStorage.removeItem('mf_novo_cadastro');
+
+    notifIdx = 0;
+    renderNotif();
+    var overlay = document.getElementById('notif-overlay');
+    overlay.style.display = 'flex';
+  }
+
+  function renderNotif() {
+    var n = NOTIFS[notifIdx];
+    document.getElementById('notif-icon').textContent    = n.icon;
+    document.getElementById('notif-badge').textContent   = n.badge;
+    document.getElementById('notif-text').innerHTML      = n.text;
+    document.getElementById('notif-btn-text').textContent = n.btn;
+    document.getElementById('notif-btn').onclick = function() {
+      if (notifIdx < NOTIFS.length - 1) {
+        proximaNotif();
+      } else {
+        fecharNotif();
+        window.location.href = n.link;
+      }
+    };
+    // Dots
+    var dots = document.getElementById('notif-dots');
+    dots.innerHTML = NOTIFS.map(function(_, i) {
+      return '<span style="width:7px;height:7px;border-radius:50%;background:' +
+        (i === notifIdx ? '#f97316' : '#3a3a3a') +
+        ';display:inline-block;transition:background .2s"></span>';
+    }).join('');
+    // Texto do botão no último slide
+    if (notifIdx === NOTIFS.length - 1) {
+      document.getElementById('notif-btn-text').textContent = n.btn;
+    }
+    // Anima o card
+    var card = document.getElementById('notif-card');
+    card.style.animation = 'none';
+    void card.offsetWidth;
+    card.style.animation = 'notifIn .35s cubic-bezier(.34,1.56,.64,1)';
+  }
+
+  function proximaNotif() {
+    if (notifIdx < NOTIFS.length - 1) {
+      notifIdx++;
+      renderNotif();
+    } else {
+      fecharNotif();
+    }
+  }
+
+  function fecharNotif() {
+    document.getElementById('notif-overlay').style.display = 'none';
+  }
+
+  function naoMostrar() {
+    localStorage.setItem('mf_notif_dismissed', '1');
+    fecharNotif();
+  }
+
+  authGuard(false, function() {
+    mostrarNotif();
+  });
+</script>
+</body>
+</html>

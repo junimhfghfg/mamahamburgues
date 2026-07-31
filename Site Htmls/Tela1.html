@@ -1,0 +1,457 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MamaFood - Conecte sua loja a milhões de clientes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red: #ea1d2c; --red-dark: #c0111e;
+      --white: #fff; --gray-1: #f5f5f5; --gray-2: #e0e0e0;
+      --gray-3: #9e9e9e; --gray-4: #616161; --dark: #1a1a1a;
+    }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; }
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; border: none; outline: none; font-family: inherit; }
+    input, select { font-family: inherit; outline: none; }
+
+    /* HEADER */
+    .header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--white); border-bottom: 1px solid var(--gray-2); height: 60px; }
+    .header-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 100%; display: flex; align-items: center; gap: 24px; }
+    .logo { display: flex; align-items: center; gap: 6px; font-size: 1.5rem; font-weight: 900; color: var(--red); white-space: nowrap; flex-shrink: 0; }
+    .city-btn { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: background .15s; }
+    .city-btn:hover { background: var(--gray-1); }
+    .city-btn .pin { color: var(--red); font-size: .95rem; }
+    .city-lines { display: flex; flex-direction: column; }
+    .city-main { font-size: .78rem; font-weight: 600; color: var(--red); }
+    .city-sub  { font-size: .72rem; color: var(--gray-4); }
+    .header-nav { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+    .nav-item { position: relative; padding: 8px 14px; font-size: .88rem; font-weight: 500; color: var(--dark); border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: background .15s; white-space: nowrap; }
+    .nav-item:hover { background: var(--gray-1); }
+    .nav-item .dd { display: none; position: absolute; top: calc(100% + 4px); left: 0; background: var(--white); border-radius: 10px; box-shadow: 0 8px 28px rgba(0,0,0,.13); min-width: 190px; padding: 8px 0; z-index: 200; }
+    .nav-item:hover .dd { display: block; }
+    .nav-item .dd a { display: block; padding: 10px 18px; font-size: .85rem; color: var(--dark); }
+    .nav-item .dd a:hover { background: var(--gray-1); }
+    .ch { font-size: .65rem; color: var(--gray-3); }
+    .header-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .btn-portal { padding: 9px 20px; border-radius: 8px; border: 2px solid var(--red); color: var(--red); font-weight: 600; font-size: .88rem; transition: all .15s; white-space: nowrap; }
+    .btn-portal:hover { background: var(--red); color: var(--white); }
+    .btn-cad { padding: 9px 20px; border-radius: 8px; background: var(--red); color: var(--white); font-weight: 700; font-size: .88rem; transition: background .15s; white-space: nowrap; }
+    .btn-cad:hover { background: var(--red-dark); }
+
+    /* HERO GRID — estilo iFood parceiros preto e branco */
+    .hero { margin-top: 60px; position: relative; height: calc(100vh - 60px); min-height: 520px; overflow: hidden; }
+    .hero-grid {
+      position: absolute; inset: 0;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+    }
+    .gc { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    /* Células com foto simulada em tons sépia/marrom como na imagem */
+    .gc .ov { position: absolute; inset: 0; }
+    .gc .em { font-size: clamp(3.5rem,6vw,7rem); z-index: 1; filter: drop-shadow(0 2px 10px rgba(0,0,0,.4)); }
+    /* Cores base sépia — replicando o grid da imagem */
+    .c1  { background: #3d2b1f; }
+    .c2  { background: #5c3d2e; }
+    .c3  { background: #2a1a10; }
+    .c4  { background: #7a5c4a; }
+    .c5  { background: #3d2b1f; }
+    .c6  { background: #5c3d2e; }
+    .c7  { background: #2a1a10; }
+    .c8  { background: #4a3020; }
+    .c9  { background: #6b4c35; }
+    .c10 { background: #2a1a10; }
+    .c11 { background: #7a5c4a; }
+    .c12 { background: #4a3020; }
+    .c13 { background: #5c3d2e; }
+    .c14 { background: #3d2b1f; }
+    /* Células com pessoas (emojis grandes sépia) */
+    .gc-person .person { font-size: clamp(5rem,9vw,11rem); filter: sepia(1) contrast(.85) brightness(.75); z-index: 1; line-height: 1; }
+    /* Células com logo/watermark */
+    .gc-logo { background: #2a1a10 !important; flex-direction: column; gap: 6px; }
+    .gc-logo .wm { font-size: clamp(1rem,2vw,1.8rem); font-weight: 900; color: rgba(255,255,255,.7); display: flex; align-items: center; gap: 8px; z-index: 1; letter-spacing: -.02em; }
+    .gc-logo .wm strong { font-weight: 900; color: #fff; }
+    .gc-logo .smile { font-size: clamp(1.5rem,3vw,2.8rem); z-index: 1; filter: sepia(1) brightness(.9); }
+    /* Célula sacola */
+    .gc-bag { background: #3d2b1f !important; }
+    .gc-bag .bag-txt { display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 1; }
+    .gc-bag .bag-txt i { font-size: clamp(2rem,4vw,4rem); color: rgba(255,255,255,.5); }
+    .gc-bag .bag-txt span { font-size: clamp(.7rem,1.2vw,1.1rem); font-weight: 800; color: rgba(255,255,255,.6); letter-spacing: -.01em; }
+    /* Capacete */
+    .gc-helmet { background: #5c3d2e !important; }
+    .gc-helmet .hel { font-size: clamp(3rem,5vw,6rem); filter: sepia(1) brightness(.7); z-index: 1; }
+    .hero-cover { position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,.72) 0%, rgba(0,0,0,.45) 48%, rgba(0,0,0,.05) 100%); z-index: 2; }
+    .hero-text { position: absolute; left: 0; top: 0; bottom: 0; width: 52%; z-index: 3; display: flex; flex-direction: column; justify-content: center; padding: 0 60px; }
+    .hero-title { font-size: clamp(1.9rem,3.8vw,3.1rem); font-weight: 900; color: var(--white); line-height: 1.1; margin-bottom: 14px; text-shadow: 0 2px 14px rgba(0,0,0,.45); }
+    .hero-sub { font-size: clamp(.9rem,1.3vw,1.1rem); color: rgba(255,255,255,.88); text-shadow: 0 1px 6px rgba(0,0,0,.3); }
+
+    /* CARD */
+    .reg-card { position: absolute; right: 48px; top: 50%; transform: translateY(-50%); width: 360px; z-index: 4; background: var(--white); border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,.22); overflow: hidden; }
+    /* Etapas */
+    .card-step { padding: 30px 28px 24px; display: none; }
+    .card-step.active { display: block; }
+    .card-title { font-size: 1.15rem; font-weight: 800; color: var(--dark); margin-bottom: 5px; line-height: 1.25; }
+    .card-sub { font-size: .82rem; color: var(--gray-4); margin-bottom: 20px; }
+    /* Step 2 title diferente */
+    .step2-title { font-size: 1.4rem; font-weight: 900; color: var(--dark); text-align: center; margin-bottom: 4px; }
+    .step2-sub { font-size: .82rem; color: var(--gray-4); text-align: center; margin-bottom: 20px; }
+    /* Campos */
+    .ff { margin-bottom: 13px; }
+    .ff label { display: block; font-size: .82rem; font-weight: 600; color: var(--dark); margin-bottom: 5px; }
+    .ff label .req { color: var(--red); }
+    .ff input, .ff select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-2); border-radius: 8px; font-size: .9rem; color: var(--dark); transition: border-color .15s; background: var(--white); }
+    .ff input:focus, .ff select:focus { border-color: var(--red); }
+    .ff input::placeholder { color: var(--gray-3); }
+    .ff input[readonly] { background: var(--gray-1); color: var(--gray-4); cursor: default; }
+    /* Input com ícone de editar */
+    .input-edit { position: relative; }
+    .input-edit input { padding-right: 40px; }
+    .input-edit .edit-ico { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); color: var(--gray-3); font-size: .85rem; cursor: pointer; }
+    .input-edit .edit-ico:hover { color: var(--red); }
+    /* Linha dupla */
+    .ff-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    /* Botões */
+    .btn-next { width: 100%; padding: 13px; background: var(--red); color: var(--white); border-radius: 8px; font-size: .95rem; font-weight: 700; margin-top: 4px; transition: background .15s; }
+    .btn-next:hover { background: var(--red-dark); }
+    .btn-back { background: none; font-size: .78rem; color: var(--red); text-decoration: underline; margin-top: 12px; display: inline-block; cursor: pointer; padding: 0; border: none; font-family: inherit; }
+    .btn-back:hover { color: var(--red-dark); }
+    /* Progress dots */
+    .progress-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 18px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gray-2); transition: background .2s; }
+    .dot.on { background: var(--red); }
+    /* Terms */
+    .card-terms { font-size: .71rem; color: var(--gray-3); margin-top: 12px; line-height: 1.5; }
+    .card-terms a { color: var(--gray-3); text-decoration: underline; }
+
+    /* TOAST */
+    .toast-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 10px; }
+    .toast { background: #222; color: #fff; padding: 13px 20px; border-radius: 10px; font-size: .9rem; font-weight: 500; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 20px rgba(0,0,0,.25); animation: tIn .3s ease, tOut .4s ease 2.6s forwards; max-width: 340px; }
+    .toast.ok  { border-left: 4px solid #4caf50; }
+    .toast.err { border-left: 4px solid var(--red); }
+    @keyframes tIn  { from { transform: translateX(110%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+    @keyframes tOut { to   { opacity:0; transform: translateX(20px); } }
+    /* Responsive */
+    @media (max-width: 860px) {
+      .hero { height: auto; min-height: 100vh; }
+      .hero-grid { position: relative; height: 52vw; min-height: 260px; }
+      .hero-cover { display: none; }
+      .hero-text { position: relative; width: 100%; padding: 28px 20px 0; }
+      .hero-title { color: var(--dark); text-shadow: none; font-size: 1.8rem; }
+      .hero-sub { color: var(--gray-4); text-shadow: none; }
+      .reg-card { position: relative; right: auto; top: auto; transform: none; width: calc(100% - 40px); margin: 24px auto 40px; }
+      .header-nav { display: none; }
+    }
+    @media (max-width: 540px) {
+      .header-inner { padding: 0 14px; gap: 12px; }
+      .city-btn, .btn-portal { display: none; }
+      .reg-card { width: calc(100% - 28px); }
+      .card-step { padding: 24px 20px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="Tela1.html" class="logo">
+        <i class="fa-solid fa-bowl-food"></i> mama<strong>food</strong>
+      </a>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="reg">
+    <div class="hero-grid">
+      <!-- Linha 1 -->
+      <div class="gc gc-person c1"><span class="person">👩</span></div>
+      <div class="gc gc-logo">
+        <span class="smile">😊↩</span>
+        <div class="wm"><i class="fa-solid fa-bowl-food"></i>Mama<strong>Food</strong></div>
+      </div>
+      <div class="gc gc-person c3"><span class="person">👨‍🍳</span></div>
+      <div class="gc gc-person c4"><span class="person">👩‍🦱</span></div>
+      <div class="gc gc-person c5"><span class="person">🧑‍🍳</span></div>
+      <div class="gc gc-person c6"><span class="person">👩‍🍳</span></div>
+      <div class="gc gc-bag">
+        <div class="bag-txt"><i class="fa-solid fa-bag-shopping"></i><span>Mama<strong style="color:#fff">Food</strong></span></div>
+      </div>
+      <!-- Linha 2 -->
+      <div class="gc gc-bag c8">
+        <div class="bag-txt"><i class="fa-solid fa-bag-shopping"></i><span>Mama<strong style="color:#fff">Food</strong></span></div>
+      </div>
+      <div class="gc gc-person c9"><span class="person">👩‍🍳</span></div>
+      <div class="gc gc-person c10"><span class="person">🧑‍🍳</span></div>
+      <div class="gc gc-logo" style="background:#1a0e08 !important">
+        <div class="wm" style="flex-direction:column;gap:4px">
+          <span style="font-size:clamp(.6rem,1vw,.9rem);color:rgba(255,255,255,.5);font-weight:400">delivery</span>
+          <span>Mama<strong>Food</strong></span>
+          <i class="fa-solid fa-arrow-right" style="color:rgba(255,255,255,.4);font-size:.8rem"></i>
+        </div>
+      </div>
+      <div class="gc gc-person c12"><span class="person">🛵</span></div>
+      <div class="gc gc-helmet c13"><span class="hel">🪖</span></div>
+      <div class="gc gc-person c14"><span class="person">🧑‍🍳</span></div>
+    </div>
+    <div class="hero-cover"></div>
+    <div class="hero-text">
+      <h1 class="hero-title">Seu delivery,<br />do seu jeito</h1>
+      <p class="hero-sub">Gerencie seus pedidos em um só lugar.<br />Rápido, simples e sem complicação.</p>
+    </div>
+
+    <!-- CARD COM 2 ETAPAS -->
+    <div class="reg-card">
+
+      <!-- ETAPA 1: E-mail (login ou cadastro) -->
+      <div class="card-step active" id="step1">
+        <div style="text-align:center;margin-bottom:20px">
+          <span style="font-size:1.8rem;font-weight:900;color:#ea1d2c"><i class="fa-solid fa-bowl-food"></i> mama<strong>food</strong></span>
+          <p style="font-size:.85rem;color:#9e9e9e;margin-top:8px">Entre ou cadastre-se com seu e-mail</p>
+        </div>
+        <form id="form1" onsubmit="verificarEmail(event)">
+          <div class="ff">
+            <label>E-mail <span class="req">*</span></label>
+            <input type="email" id="f-email" placeholder="email@email.com.br" required />
+          </div>
+          <button type="submit" class="btn-next">Continuar</button>
+        </form>
+        <p class="card-terms">
+          Ao continuar, você concorda com os termos de uso do MamaFood.
+          <a href="#">Leia nossa Política de Privacidade.</a>
+        </p>
+      </div>
+
+      <!-- ETAPA 2: Dados completos (apenas para novos cadastros) -->
+      <div class="card-step" id="step2">
+        <div class="progress-dots"><div class="dot"></div><div class="dot on"></div></div>
+        <h2 class="step2-title">Quase lá!</h2>
+        <p class="step2-sub">Preencha os dados abaixo para começar a receber pedidos</p>
+        <form id="form2" onsubmit="finishRegister(event)">
+
+          <div class="ff">
+            <label>Nome completo <span class="req">*</span></label>
+            <input type="text" id="f-name" placeholder="Nome Sobrenome" required />
+          </div>
+
+          <div class="ff">
+            <label>Celular <span class="req">*</span></label>
+            <input type="tel" id="f-phone" placeholder="(00) 00000-0000" maxlength="15" oninput="maskPhone(this)" required />
+          </div>
+
+          <div class="ff">
+            <label>E-mail <span class="req">*</span></label>
+            <div class="input-edit">
+              <input type="email" id="f-email2" readonly />
+              <i class="fa-solid fa-pen-to-square edit-ico" onclick="backStep()" title="Editar e-mail"></i>
+            </div>
+          </div>
+
+          <div class="ff">
+            <label>Senha <span class="req">*</span></label>
+            <input type="password" id="f-senha" placeholder="Crie uma senha" minlength="6" required />
+          </div>
+
+          <div class="ff">
+            <label>CEP <span class="req">*</span></label>
+            <input type="text" id="f-cep" placeholder="00000-000" maxlength="9" oninput="maskCEP(this)" onblur="fetchCEP()" required />
+          </div>
+
+          <div class="ff">
+            <label>Rua / Logradouro <span class="req">*</span></label>
+            <input type="text" id="f-street" placeholder="Nome da rua" required />
+          </div>
+
+          <div class="ff-row">
+            <div class="ff">
+              <label>Número <span class="req">*</span></label>
+              <input type="text" id="f-number" placeholder="Nº" required />
+            </div>
+            <div class="ff">
+              <label>Complemento</label>
+              <input type="text" id="f-comp" placeholder="Apto, sala..." />
+            </div>
+          </div>
+
+          <div class="ff">
+            <label>Bairro <span class="req">*</span></label>
+            <input type="text" id="f-neighborhood" placeholder="Seu bairro" required />
+          </div>
+
+          <div class="ff-row">
+            <div class="ff">
+              <label>Cidade <span class="req">*</span></label>
+              <input type="text" id="f-city" placeholder="Cidade" required />
+            </div>
+            <div class="ff">
+              <label>Estado <span class="req">*</span></label>
+              <select id="f-state" required>
+                <option value="">UF</option>
+                <option>AC</option><option>AL</option><option>AP</option><option>AM</option>
+                <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+                <option>GO</option><option>MA</option><option>MT</option><option>MS</option>
+                <option>MG</option><option>PA</option><option>PB</option><option>PR</option>
+                <option>PE</option><option>PI</option><option>RJ</option><option>RN</option>
+                <option>RS</option><option>RO</option><option>RR</option><option>SC</option>
+                <option>SP</option><option>SE</option><option>TO</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-next">Finalizar cadastro</button>
+        </form>
+        <button class="btn-back" onclick="backStep()">← Voltar</button>
+      </div>
+
+    </div><!-- /reg-card -->
+  </section>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script>
+    // ── Proteção anti-DevTools ───────────────────────────────────
+    (function(){
+      document.addEventListener('contextmenu',function(e){e.preventDefault();});
+      document.addEventListener('keydown',function(e){
+        if(e.keyCode===123){e.preventDefault();return false;}
+        if(e.ctrlKey&&e.shiftKey&&'ijcIJC'.indexOf(e.key||'')!==-1){e.preventDefault();return false;}
+        if(e.ctrlKey&&'uUsSpP'.indexOf(e.key||'')!==-1){e.preventDefault();return false;}
+      },true);
+      setInterval(function(){
+        if(window.outerWidth-window.innerWidth>160||window.outerHeight-window.innerHeight>160){
+          document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#111;color:#ff4444;font-family:monospace">Acesso não autorizado.</div>';
+        }
+      },600);
+      var s=document.createElement('style');
+      s.textContent='*{-webkit-user-select:none!important;user-select:none!important}input,textarea,select{-webkit-user-select:text!important;user-select:text!important}';
+      document.head.appendChild(s);
+    })();
+
+    // ── Auto-login: se já tem cadastro, vai direto pro painel ────
+    (function(){
+      var p = JSON.parse(localStorage.getItem('mf_parceiro') || 'null');
+      if (p && p.email) {
+        window.location.replace('Tela2.html');
+      }
+    })();
+
+    // ── Verificar email: Login automático ou cadastro ────────────
+    function verificarEmail(e) {
+      e.preventDefault();
+      var email = document.getElementById('f-email').value.trim().toLowerCase();
+      if (!email) return;
+
+      // Busca se já existe cadastro com esse email
+      var p = JSON.parse(localStorage.getItem('mf_parceiro') || 'null');
+      
+      if (p && p.email && p.email.toLowerCase() === email) {
+        // ✅ Email já cadastrado → LOGIN AUTOMÁTICO
+        showToast('✅ Bem-vindo de volta! Entrando...', 'ok');
+        setTimeout(function() {
+          window.location.href = 'Tela2.html';
+        }, 800);
+      } else {
+        // ❌ Email novo → Vai para cadastro completo
+        document.getElementById('f-email2').value = email;
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step2').classList.add('active');
+        document.querySelector('.reg-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    // ── Voltar para etapa 1 ───────────────────────────────────────
+    function backStep() {
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('step1').classList.add('active');
+    }
+
+    // ── Finalizar cadastro ────────────────────────────────────────
+    function finishRegister(e) {
+      e.preventDefault();
+      var data = {
+        email:       document.getElementById('f-email2').value,
+        nome:        document.getElementById('f-name').value,
+        celular:     document.getElementById('f-phone').value,
+        senha:       document.getElementById('f-senha').value,
+        cep:         document.getElementById('f-cep').value,
+        rua:         document.getElementById('f-street').value,
+        numero:      document.getElementById('f-number').value,
+        complemento: document.getElementById('f-comp').value,
+        bairro:      document.getElementById('f-neighborhood').value,
+        cidade:      document.getElementById('f-city').value,
+        estado:      document.getElementById('f-state').value,
+        cadastradoEm: new Date().toISOString()
+      };
+
+      // ── Salva parceiro no localStorage ──
+      localStorage.setItem('mf_parceiro', JSON.stringify(data));
+
+      // ── Inicia lista de pedidos vazia se não existir ──
+      if (!localStorage.getItem('mf_pedidos')) {
+        localStorage.setItem('mf_pedidos', JSON.stringify([]));
+      }
+
+      // ── Marca como novo cadastro para mostrar boas-vindas ──
+      localStorage.setItem('mf_novo_cadastro', '1');
+
+      showToast('🎉 Cadastro salvo! Redirecionando...', 'ok');
+
+      // ── Redireciona para Tela2 após 1.2s ──
+      setTimeout(function () {
+        window.location.href = 'Tela2.html';
+      }, 1200);
+    }
+
+    // ── Máscara telefone (00) 00000-0000 ─────────────────────────
+    function maskPhone(el) {
+      var v = el.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 6)      v = '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7);
+      else if (v.length > 2) v = '(' + v.slice(0,2) + ') ' + v.slice(2);
+      else if (v.length > 0) v = '(' + v;
+      el.value = v;
+    }
+
+    // ── Máscara CEP 00000-000 ─────────────────────────────────────
+    function maskCEP(el) {
+      var v = el.value.replace(/\D/g, '').slice(0, 8);
+      if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5);
+      el.value = v;
+    }
+
+    // ── Busca CEP via ViaCEP ──────────────────────────────────────
+    function fetchCEP() {
+      var cep = document.getElementById('f-cep').value.replace(/\D/g, '');
+      if (cep.length !== 8) return;
+      fetch('https://viacep.com.br/ws/' + cep + '/json/')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.erro) { showToast('CEP não encontrado.', 'err'); return; }
+          document.getElementById('f-street').value       = d.logradouro  || '';
+          document.getElementById('f-neighborhood').value = d.bairro      || '';
+          document.getElementById('f-city').value         = d.localidade  || '';
+          var sel = document.getElementById('f-state');
+          for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === d.uf) { sel.selectedIndex = i; break; }
+          }
+          // Foca no número após preencher
+          document.getElementById('f-number').focus();
+        })
+        .catch(function() { /* sem internet, ignora */ });
+    }
+
+    // ── Toast ─────────────────────────────────────────────────────
+    function showToast(msg, type) {
+      var wrap = document.getElementById('toastWrap');
+      var t = document.createElement('div');
+      t.className = 'toast ' + (type || 'ok');
+      t.textContent = msg;
+      wrap.appendChild(t);
+      setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 3200);
+    }
+  </script>
+</body>
+</html>

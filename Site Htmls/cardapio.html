@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MamaFood — Cardápio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .cat-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
+    .cat-tab { padding:7px 18px; border-radius:20px; border:1.5px solid var(--gray-2); font-size:.83rem; font-weight:600; color:var(--gray-4); cursor:pointer; transition:all .15s; background:var(--white); }
+    .cat-tab:hover { border-color:var(--red); color:var(--red); }
+    .cat-tab.active { background:var(--red); color:#fff; border-color:var(--red); }
+    .menu-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+    .menu-card { background:var(--white); border-radius:14px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.06); border:1.5px solid var(--gray-2); transition:box-shadow .15s; }
+    .menu-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.1); }
+    .menu-card-img { height:120px; background:var(--gray-1); display:flex; align-items:center; justify-content:center; font-size:3.5rem; }
+    .menu-card-body { padding:14px; }
+    .menu-card-name { font-size:.95rem; font-weight:700; color:var(--dark); margin-bottom:4px; }
+    .menu-card-desc { font-size:.78rem; color:var(--gray-3); margin-bottom:10px; line-height:1.4; min-height:32px; }
+    .menu-card-footer { display:flex; align-items:center; justify-content:space-between; }
+    .menu-card-price { font-size:1rem; font-weight:800; color:var(--red); }
+    .btn-pedir { background:var(--red); color:#fff; padding:7px 16px; border-radius:8px; font-size:.8rem; font-weight:700; transition:background .15s; }
+    .btn-pedir:hover { background:var(--red-dark); }
+    .menu-card-cat { font-size:.68rem; font-weight:700; color:var(--gray-3); text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px; }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-btn" id="menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <div><span class="topbar-title">Cardápio</span><span class="topbar-sub"> — escolha o que quiser</span></div>
+      <div class="topbar-right">
+        <div class="topbar-time"><i class="fa-regular fa-clock"></i><span id="clock">--:--</span></div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="cat-tabs" id="catTabs"></div>
+      <div class="menu-grid" id="menuGrid"></div>
+    </div>
+  </div>
+</div>
+<div class="toast-wrap" id="toastWrap"></div>
+<script src="../../App Js/shared.js"></script>
+<script>
+var catAtual = 'Todos';
+
+function getCardapio() {
+  return JSON.parse(localStorage.getItem('mf_cardapio') || '[]');
+}
+
+function renderCats(items) {
+  var cats = ['Todos'];
+  items.forEach(function(i){ if(cats.indexOf(i.categoria)<0) cats.push(i.categoria); });
+  document.getElementById('catTabs').innerHTML = cats.map(function(c){
+    return '<button class="cat-tab'+(c===catAtual?' active':'')+'" onclick="filterCat(\''+c+'\')">' + c + '</button>';
+  }).join('');
+}
+
+function filterCat(cat) {
+  catAtual = cat;
+  var items = getCardapio();
+  renderCats(items);
+  var list = cat==='Todos' ? items : items.filter(function(i){return i.categoria===cat;});
+  renderGrid(list);
+}
+
+function renderGrid(items) {
+  var el = document.getElementById('menuGrid');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fa-solid fa-utensils"></i><h3>Nenhum item encontrado</h3><p>O cardápio será exibido aqui quando o admin adicionar produtos.</p></div>';
+    return;
+  }
+  el.innerHTML = items.map(function(p){
+    var imgHtml = p.imagem
+      ? '<img src="'+p.imagem+'" alt="'+esc(p.nome)+'" style="width:100%;height:100%;object-fit:cover;display:block"/>'
+      : (p.emoji||'🍽️');
+    return '<div class="menu-card">' +
+      '<div class="menu-card-img">' + imgHtml + '</div>' +
+      '<div class="menu-card-body">' +
+        '<div class="menu-card-cat">' + esc(p.categoria||'') + '</div>' +
+        '<div class="menu-card-name">' + esc(p.nome) + '</div>' +
+        '<div class="menu-card-desc">' + esc(p.descricao||'') + '</div>' +
+        '<div class="menu-card-footer">' +
+          '<span class="menu-card-price">R$ ' + Number(p.preco).toFixed(2).replace('.',',') + '</span>' +
+          '<button class="btn-pedir" onclick="adicionarPedido('+JSON.stringify(p)+')">Pedir</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function adicionarPedido(produto) {
+  var carrinho = JSON.parse(localStorage.getItem('mf_carrinho')||'[]');
+  var idx = carrinho.findIndex(function(i){return i.id===produto.id;});
+  if(idx>=0){ carrinho[idx].qty++; } else { carrinho.push({id:produto.id,nome:produto.nome,preco:produto.preco,emoji:produto.emoji||'🍽️',qty:1}); }
+  localStorage.setItem('mf_carrinho', JSON.stringify(carrinho));
+  showToast((produto.emoji||'🍽️')+' '+produto.nome+' adicionado!','ok');
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+authGuard(false, function() {
+  var items = getCardapio();
+  renderCats(items);
+  renderGrid(items);
+});
+</script>
+</body>
+</html>

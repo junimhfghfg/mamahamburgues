@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MamaFood — Pedidos (Admin)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../shared.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-btn" id="menu-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <div><span class="topbar-title">Pedidos</span><span class="topbar-sub"> — em tempo real</span></div>
+      <div class="topbar-right">
+        <div class="topbar-time"><i class="fa-regular fa-clock"></i><span id="clock">--:--</span></div>
+        <div class="status-pill open" id="status-pill" onclick="toggleStatus()">
+          <span class="dot"></span><span id="status-text">Aberto</span>
+        </div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="stats-row">
+        <div class="stat-card red"><div class="s-label">Novos</div><div class="s-val" id="cnt-new">0</div><div class="s-sub">aguardando aceite</div></div>
+        <div class="stat-card"><div class="s-label">Em preparo</div><div class="s-val" id="cnt-prep">0</div><div class="s-sub">na cozinha agora</div></div>
+        <div class="stat-card"><div class="s-label">A caminho</div><div class="s-val" id="cnt-del">0</div><div class="s-sub">com entregador</div></div>
+        <div class="stat-card green"><div class="s-label">Concluídos</div><div class="s-val" id="cnt-done">0</div><div class="s-sub">hoje</div></div>
+      </div>
+      <div class="page-tabs">
+        <div class="ptab active" id="tab-ativos" onclick="switchTab('ativos')">Ativos <span class="n" id="n-ativos">0</span></div>
+        <div class="ptab" id="tab-concluidos" onclick="switchTab('concluidos')">Concluídos <span class="n" id="n-concluidos">0</span></div>
+      </div>
+      <div class="orders-list" id="ordersList"></div>
+    </div>
+  </div>
+</div>
+<div class="toast-wrap" id="toastWrap"></div>
+<script src="../../App Js/shared.js"></script>
+<script>
+var tabAtual='ativos';
+var lojaAberta=true;
+var nextId=200;
+
+function getPedidos(){return JSON.parse(localStorage.getItem('mf_pedidos')||'[]');}
+function setPedidos(p){localStorage.setItem('mf_pedidos',JSON.stringify(p));}
+
+function toggleStatus(){
+  lojaAberta=!lojaAberta;
+  var pill=document.getElementById('status-pill');
+  document.getElementById('status-text').textContent=lojaAberta?'Aberto':'Fechado';
+  pill.className='status-pill '+(lojaAberta?'open':'closed');
+  showToast(lojaAberta?'✅ Loja aberta':'🔴 Loja fechada',lojaAberta?'ok':'err');
+}
+
+function switchTab(tab){
+  tabAtual=tab;
+  document.getElementById('tab-ativos').classList.toggle('active',tab==='ativos');
+  document.getElementById('tab-concluidos').classList.toggle('active',tab==='concluidos');
+  renderOrders();
+}
+
+function renderOrders(){
+  var pedidos=getPedidos();
+  var ativos=pedidos.filter(function(p){return p.status!=='done';});
+  var concluidos=pedidos.filter(function(p){return p.status==='done';});
+  document.getElementById('cnt-new').textContent=pedidos.filter(function(p){return p.status==='new';}).length;
+  document.getElementById('cnt-prep').textContent=pedidos.filter(function(p){return p.status==='prep';}).length;
+  document.getElementById('cnt-del').textContent=pedidos.filter(function(p){return p.status==='delivery';}).length;
+  document.getElementById('cnt-done').textContent=concluidos.length;
+  document.getElementById('n-ativos').textContent=ativos.length;
+  document.getElementById('n-concluidos').textContent=concluidos.length;
+  var badge=document.getElementById('badge-new');
+  if(badge) badge.textContent=pedidos.filter(function(p){return p.status==='new';}).length;
+  var list=tabAtual==='ativos'?ativos:concluidos;
+  var el=document.getElementById('ordersList');
+  if(!list.length){
+    el.innerHTML='<div class="empty-state"><i class="fa-solid fa-bag-shopping"></i><h3>'+(tabAtual==='ativos'?'Nenhum pedido ativo':'Nenhum pedido concluído')+'</h3><p>Os pedidos aparecem aqui quando chegarem</p></div>';
+    return;
+  }
+  var labels={new:'Novo',prep:'Em preparo',delivery:'A caminho',done:'Entregue'};
+  el.innerHTML=list.map(function(p){
+    var itens=p.itens.map(function(i){return'<div class="oc-item-row"><span class="qty">'+i.qty+'x</span><span>'+i.nome+'</span></div>';}).join('');
+    var actions='';
+    if(p.status==='new') actions='<button class="btn-action accept" onclick="mover('+p.id+',\'prep\')">✓ Aceitar</button><button class="btn-action reject" onclick="mover('+p.id+',\'cancel\')">✗ Recusar</button>';
+    else if(p.status==='prep') actions='<button class="btn-action next" onclick="mover('+p.id+',\'delivery\')"><i class="fa-solid fa-motorcycle"></i> Saiu p/ entrega</button>';
+    else if(p.status==='delivery') actions='<button class="btn-action next" onclick="mover('+p.id+',\'done\')"><i class="fa-solid fa-check"></i> Entregue</button>';
+    return'<div class="order-card '+p.status+'">'+
+      '<div class="oc-header"><div><div class="oc-num">#'+String(p.id).toString().slice(-4).padStart(4,'0')+'</div><div class="oc-name">'+p.cliente+'</div><div class="oc-addr"><i class="fa-solid fa-location-dot" style="color:var(--red);font-size:.7rem"></i> '+p.endereco+'</div></div>'+
+      '<div class="oc-time"><i class="fa-regular fa-clock"></i> '+p.hora+'</div>'+
+      '<span class="oc-status '+p.status+'">'+labels[p.status]+'</span></div>'+
+      '<div class="oc-body"><div class="oc-items">'+itens+'</div>'+
+      '<div class="oc-total"><span class="label">Total</span>R$ '+Number(p.total).toFixed(2).replace('.',',')+'</div>'+
+      '<div class="oc-actions">'+actions+'</div></div></div>';
+  }).join('');
+}
+
+function mover(id,status){
+  var pedidos=getPedidos();
+  var idx=pedidos.findIndex(function(p){return p.id===id;});
+  if(idx===-1) return;
+  if(status==='cancel'){ pedidos.splice(idx,1); showToast('Pedido recusado','err'); }
+  else { pedidos[idx].status=status; var msgs={prep:'🍳 Em preparo!',delivery:'🛵 A caminho!',done:'✅ Entregue!'}; showToast(msgs[status]||'Atualizado','ok'); }
+  setPedidos(pedidos); renderOrders();
+}
+
+// Simula novo pedido a cada 30s
+setInterval(function(){
+  if(!lojaAberta) return;
+  var clientes=['Maria S.','Pedro A.','Juliana L.','Rafael T.','Camila R.'];
+  var enderecos=['Rua das Flores, 42','Av. Brasil, 1200','Rua 7 de Setembro, 88','Alameda Santos, 300','Rua Augusta, 512'];
+  var menus=JSON.parse(localStorage.getItem('mf_cardapio')||'[]');
+  var itens=menus.length?[{qty:1,nome:menus[Math.floor(Math.random()*menus.length)].nome}]:[{qty:1,nome:'Item sem cardápio'}];
+  var preco=menus.length?menus[0].preco:29.90;
+  var c=Math.floor(Math.random()*clientes.length);
+  var n=new Date();
+  var hora=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+  nextId++;
+  var pedidos=getPedidos();
+  pedidos.unshift({id:nextId,cliente:clientes[c],endereco:enderecos[c],itens:itens,total:preco,status:'new',hora:hora});
+  setPedidos(pedidos); renderOrders();
+  var badge=document.getElementById('badge-new');
+  if(badge) badge.textContent=pedidos.filter(function(p){return p.status==='new';}).length;
+  showToast('🛎️ Novo pedido de '+clientes[c]+'!','ok');
+},30000);
+
+authGuard(true,function(){
+  renderOrders();
+});
+</script>
+</body>
+</html>
