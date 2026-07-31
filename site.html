@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MamaFood - Sistema de Delivery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:linear-gradient(135deg,#667eea,#764ba2); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .card { background:#fff; border-radius:20px; padding:40px; max-width:400px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+    h1 { color:#ea1d2c; text-align:center; margin-bottom:10px; font-size:2rem; }
+    p { text-align:center; color:#666; margin-bottom:30px; }
+    .ff { margin-bottom:14px; }
+    .ff label { display:block; font-size:.82rem; font-weight:600; margin-bottom:5px; }
+    .ff input { width:100%; padding:11px 14px; border:1.5px solid #e0e0e0; border-radius:8px; font-size:.9rem; }
+    .ff input:focus { border-color:#ea1d2c; outline:none; }
+    .btn { width:100%; padding:13px; background:#ea1d2c; color:#fff; border:none; border-radius:8px; font-size:.95rem; font-weight:700; cursor:pointer; margin-top:10px; }
+    .btn:hover { background:#c0111e; }
+    .success { text-align:center; }
+    .success h2 { color:#1a1a1a; margin:20px 0 10px; }
+  </style>
+</head>
+<body>
+  <div class="card" id="loginCard">
+    <h1>🍔 MamaFood</h1>
+    <p>Entre ou cadastre-se com seu email</p>
+    <form onsubmit="verificar(event)">
+      <div class="ff">
+        <label>E-mail</label>
+        <input type="email" id="email" placeholder="seu@email.com" required>
+      </div>
+      <button type="submit" class="btn">Continuar</button>
+    </form>
+  </div>
+
+  <div class="card" id="cadastroCard" style="display:none">
+    <h1>Complete seu cadastro</h1>
+    <p>Preencha os dados abaixo</p>
+    <form onsubmit="cadastrar(event)">
+      <div class="ff"><label>Nome</label><input type="text" id="nome" required></div>
+      <div class="ff"><label>Celular</label><input type="tel" id="cel" required></div>
+      <div class="ff"><label>Senha</label><input type="password" id="senha" minlength="6" required></div>
+      <button type="submit" class="btn">Cadastrar</button>
+    </form>
+  </div>
+
+  <div class="card success" id="painelCard" style="display:none">
+    <h1 style="font-size:4rem">✅</h1>
+    <h2>Bem-vindo!</h2>
+    <p id="msg"></p>
+    <button class="btn" onclick="sair()">Sair</button>
+  </div>
+
+  <script>
+    const u=JSON.parse(localStorage.getItem('mf_u')||'null');
+    if(u)mostrar(u);
+    function verificar(e){e.preventDefault();const email=document.getElementById('email').value.trim();if(u&&u.email===email)mostrar(u);else{document.getElementById('loginCard').style.display='none';document.getElementById('cadastroCard').style.display='block';localStorage.setItem('mf_temp',email);}}
+    function cadastrar(e){e.preventDefault();const user={email:localStorage.getItem('mf_temp'),nome:document.getElementById('nome').value,celular:document.getElementById('cel').value,senha:document.getElementById('senha').value};localStorage.setItem('mf_u',JSON.stringify(user));mostrar(user);}
+    function mostrar(user){document.getElementById('loginCard').style.display='none';document.getElementById('cadastroCard').style.display='none';document.getElementById('painelCard').style.display='block';document.getElementById('msg').textContent=`Olá, ${user.nome||user.email}! ✨`;}
+    function sair(){localStorage.removeItem('mf_u');location.reload();}
+  </script>
+</body>
+</html>
