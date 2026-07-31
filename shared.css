@@ -1,9 +1,10 @@
 // ============================================================
-// shared.js — MamaFood v2
+// shared.js — MamaFood v2 (SEM BLOQUEIO MOBILE)
 // ============================================================
 
-// ── Proteção básica (não bloqueia thread) ─────────────────────────
+// ── Proteção básica (SEM detector de DevTools) ────────────────────
 (function(){
+  // Apenas bloqueia botão direito e teclas F12/Ctrl+U
   document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
   document.addEventListener('keydown', function(e){
     var k = e.key || '';
@@ -17,57 +18,30 @@
   var _s = document.createElement('style');
   _s.textContent = '*{-webkit-user-select:none!important;user-select:none!important}input,textarea,select{-webkit-user-select:text!important;user-select:text!important}';
   (document.head || document.documentElement).appendChild(_s);
-  // Detecta DevTools por diferença de tamanho
-  var _dtOpen = false;
-  setInterval(function(){
-    var dw = window.outerWidth  - window.innerWidth  > 200;
-    var dh = window.outerHeight - window.innerHeight > 200;
-    if ((dw || dh) && !_dtOpen) {
-      _dtOpen = true;
-      document.documentElement.innerHTML = '<html><head></head><body style="background:#111;display:flex;align-items:center;justify-content:center;height:100vh"><p style="color:#ff4444;font-family:monospace;font-size:14px">Acesso n\u00e3o autorizado.</p></body></html>';
-    } else if (!dw && !dh) { _dtOpen = false; }
-  }, 800);
+  // ✅ REMOVIDO: Detecção de DevTools (causava "Acesso não autorizado" no mobile)
 })();
 
 // ── .env / ADMIN_EMAILS ───────────────────────────────────────────
-// Fallback hardcoded — funciona mesmo sem fetch
 var ADMIN_EMAILS = ['francimarjuniorr435@gmail.com'];
 var _envLoaded   = false;
 
 function loadEnv(cb) {
-  console.log('🔄 loadEnv() iniciado, _envLoaded:', _envLoaded);
-  if (_envLoaded) { 
-    console.log('✅ .env já carregado, ADMIN_EMAILS:', ADMIN_EMAILS);
-    cb(); 
-    return; 
-  }
-  var tried = 0;
+  if (_envLoaded) { cb(); return; }
   var paths  = ['../../.env', '../.env', '/.env', '.env'];
   function tryPath(i) {
-    if (i >= paths.length) { 
-      console.warn('⚠️ .env não encontrado em nenhum path, usando fallback:', ADMIN_EMAILS);
-      _envLoaded = true; 
-      cb(); 
-      return; 
-    }
-    console.log('🔍 Tentando carregar:', paths[i]);
+    if (i >= paths.length) { _envLoaded = true; cb(); return; }
     fetch(paths[i] + '?t=' + Date.now())
       .then(function(r){ return r.ok ? r.text() : Promise.reject('not ok'); })
       .then(function(txt){
-        console.log('✅ .env carregado de', paths[i], 'conteúdo:', txt.substring(0, 100));
         var m = txt.match(/^ADMIN_EMAILS\s*=\s*([^\r\n]+)/m);
         if (m) {
           ADMIN_EMAILS = m[1].trim().split(',').map(function(e){
             return e.trim().toLowerCase();
           }).filter(Boolean);
-          console.log('📧 ADMIN_EMAILS extraídos:', ADMIN_EMAILS);
         }
         _envLoaded = true; cb();
       })
-      .catch(function(err){ 
-        console.log('❌ Falha ao carregar', paths[i], err);
-        tryPath(i + 1); 
-      });
+      .catch(function(){ tryPath(i + 1); });
   }
   tryPath(0);
 }
@@ -83,20 +57,12 @@ function isAdmin(){
 
 // ── Auth guard ────────────────────────────────────────────────────
 function authGuard(adminOnly, cb) {
-  console.log('🚪 authGuard() iniciado, adminOnly:', adminOnly);
   var p = getParceiro();
-  if (!p) { 
-    console.log('❌ Sem parceiro no localStorage, redirecionando para Tela1');
-    window.location.href = 'Tela1.html'; 
-    return; 
-  }
-  console.log('👤 Parceiro encontrado:', p);
+  if (!p) { window.location.href = 'Tela1.html'; return; }
   loadEnv(function(){
-    console.log('🏗️ Chamando buildSidebar...');
     buildSidebar(window.location.pathname.split('/').pop());
     startClock('clock');
     if (adminOnly && !isAdmin()) {
-      console.log('🔒 Acesso negado: página admin-only mas usuário não é admin');
       var main = document.querySelector('.main');
       if (main) main.innerHTML =
         '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;gap:16px;padding:40px;text-align:center">' +
@@ -106,19 +72,15 @@ function authGuard(adminOnly, cb) {
         '<a href="Tela2.html" style="color:#ea1d2c;font-weight:700;font-family:Inter,sans-serif">← Voltar ao painel</a></div>';
       return;
     }
-    console.log('✅ authGuard completo, executando callback da página');
     if (cb) cb();
   });
 }
 
 // ── Sidebar ───────────────────────────────────────────────────────
 function buildSidebar(activePage) {
-  console.log('🔧 buildSidebar() INICIOU', {activePage: activePage});
   if (!activePage) activePage = window.location.pathname.split('/').pop() || '';
   var p     = getParceiro();
   var admin = isAdmin();
-  console.log('👤 Dados do parceiro:', p);
-  console.log('🔑 É admin?', admin, 'ADMIN_EMAILS:', ADMIN_EMAILS);
   var name  = p ? (p.nome || 'Meu Restaurante') : '—';
   var addr  = p ? ((p.rua||'') + (p.numero ? ', '+p.numero : '') + (p.cidade ? ' — '+p.cidade : '')) : '—';
 
@@ -143,15 +105,8 @@ function buildSidebar(activePage) {
     '</nav>' +
     '<div class="sb-footer"><div class="sb-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Sair da conta</div></div>';
 
-  console.log('📝 HTML gerado (primeiros 200 chars):', html.substring(0, 200));
   var el = document.getElementById('sidebar');
-  console.log('🎯 Elemento sidebar encontrado?', !!el);
-  if (el) {
-    el.innerHTML = html;
-    console.log('✅ innerHTML atribuído, sidebar deve estar visível agora');
-  } else {
-    console.error('❌ ERRO: elemento #sidebar NÃO encontrado no DOM!');
-  }
+  if (el) el.innerHTML = html;
 }
 
 function _sb(icon, label, href, active, hasBadge, badgeId) {
@@ -160,7 +115,7 @@ function _sb(icon, label, href, active, hasBadge, badgeId) {
   return '<a class="'+cls+'" href="'+href+'"><i class="fa-solid '+icon+'"></i>'+label+badge+'</a>';
 }
 
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){ return String(s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>'); }
 
 // ── Relógio ───────────────────────────────────────────────────────
 function startClock(id) {
