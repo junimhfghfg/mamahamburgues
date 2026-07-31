@@ -1,25 +1,6 @@
 // ============================================================
-// shared.js — MamaFood v2 (SEM BLOQUEIO MOBILE)
+// shared.js — MamaFood v2 (SEM PROTEÇÕES)
 // ============================================================
-
-// ── Proteção básica (SEM detector de DevTools) ────────────────────
-(function(){
-  // Apenas bloqueia botão direito e teclas F12/Ctrl+U
-  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
-  document.addEventListener('keydown', function(e){
-    var k = e.key || '';
-    if (e.keyCode === 123) { e.preventDefault(); return false; }
-    if (e.ctrlKey && e.shiftKey && 'ijcIJC'.indexOf(k) !== -1) { e.preventDefault(); return false; }
-    if (e.ctrlKey && 'uUsSpP'.indexOf(k) !== -1) { e.preventDefault(); return false; }
-  }, true);
-  document.addEventListener('selectstart', function(e){
-    if (!['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) e.preventDefault();
-  });
-  var _s = document.createElement('style');
-  _s.textContent = '*{-webkit-user-select:none!important;user-select:none!important}input,textarea,select{-webkit-user-select:text!important;user-select:text!important}';
-  (document.head || document.documentElement).appendChild(_s);
-  // ✅ REMOVIDO: Detecção de DevTools (causava "Acesso não autorizado" no mobile)
-})();
 
 // ── .env / ADMIN_EMAILS ───────────────────────────────────────────
 var ADMIN_EMAILS = ['francimarjuniorr435@gmail.com'];
@@ -115,7 +96,7 @@ function _sb(icon, label, href, active, hasBadge, badgeId) {
   return '<a class="'+cls+'" href="'+href+'"><i class="fa-solid '+icon+'"></i>'+label+badge+'</a>';
 }
 
-function esc(s){ return String(s).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>'); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'>'); }
 
 // ── Relógio ───────────────────────────────────────────────────────
 function startClock(id) {
