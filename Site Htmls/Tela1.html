@@ -313,23 +313,8 @@
   <div class="toast-wrap" id="toastWrap"></div>
 
   <script>
-    // ── Proteção anti-DevTools ───────────────────────────────────
-    (function(){
-      document.addEventListener('contextmenu',function(e){e.preventDefault();});
-      document.addEventListener('keydown',function(e){
-        if(e.keyCode===123){e.preventDefault();return false;}
-        if(e.ctrlKey&&e.shiftKey&&'ijcIJC'.indexOf(e.key||'')!==-1){e.preventDefault();return false;}
-        if(e.ctrlKey&&'uUsSpP'.indexOf(e.key||'')!==-1){e.preventDefault();return false;}
-      },true);
-      setInterval(function(){
-        if(window.outerWidth-window.innerWidth>160||window.outerHeight-window.innerHeight>160){
-          document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#111;color:#ff4444;font-family:monospace">Acesso não autorizado.</div>';
-        }
-      },600);
-      var s=document.createElement('style');
-      s.textContent='*{-webkit-user-select:none!important;user-select:none!important}input,textarea,select{-webkit-user-select:text!important;user-select:text!important}';
-      document.head.appendChild(s);
-    })();
+    // ── Auto-login: se já tem cadastro, vai direto pro painel ────
+
 
     // ── Auto-login: se já tem cadastro, vai direto pro painel ────
     (function(){
